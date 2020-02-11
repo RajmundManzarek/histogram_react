@@ -1,11 +1,11 @@
 import React from 'react';
 import { render } from 'react-dom'
-// import Parser from 'html-react-parser'
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 import HC_exporting from 'highcharts/modules/exporting'
 import ColorScheme from 'highcharts/themes/grid'
 import { useTable } from 'react-table'
+import jsonData from './data/input.json'
 
 import './App.css'
 
@@ -57,14 +57,12 @@ class App extends React.Component {
   constructor(props) {
     super(props)
 
-    console.log(window.location.href)
-
-    this.state = { ok: 0 }
-
-    this.msg = '';
-
     this.options = {
+      credits: {
+        enabled: false
+      },
       chart: {
+        type: 'spline',
         height: 500,
         width: 1800
       },
@@ -86,8 +84,6 @@ class App extends React.Component {
         }
       },
       yAxis: {
-        tickInterval: 50,
-        minorTickInterval: 10,
         max: 100,
         title: {
           text: 'Latency µs'
@@ -96,6 +92,9 @@ class App extends React.Component {
       series: []
     }
     this.histogramOptions = {
+      credits: {
+        enabled: false
+      },
       chart: {
         type: 'column',
         height: 800,
@@ -108,19 +107,6 @@ class App extends React.Component {
         enabled: true,
         align: 'left'
       },
-      // xAxis: {
-      //   tickInterval: 1,
-      //   tickPositions: [],
-      //   gridLineWidth: 1,
-      //   labels: {
-      //     format: '{value:.2f}',
-      //     rotation: -90
-      //   },
-      //   type: 'logarithmic',
-      //   title: {
-      //     text: 'Percentile'
-      //   }
-      // },
       yAxis: {
         tickInterval: 50,
         minorTickInterval: 10,
@@ -137,7 +123,7 @@ class App extends React.Component {
         accessor: 'what',
       },
       {
-        Header: 'Standard Deviation',
+        Header: 'Standard Deviation [µs]',
         accessor: 'stdDev',
       },
       {
@@ -161,65 +147,44 @@ class App extends React.Component {
         accessor: 'count',
       },
     ]
+
     this.tableData = [];
-  }
 
-  componentDidMount() {
-    var self = this
+    if (jsonData.hasOwnProperty('setup')) {
+      if (jsonData.setup.hasOwnProperty('subTitle')) {
+        this.options.subtitle = { text: jsonData.setup.subTitle }
+      }
 
-    fetch('http://localhost:4000/setup')
-      .then(response => response.json())
-      .then(jsonData => {
-        self.options.title = { text: jsonData.title }
+      if (jsonData.setup.hasOwnProperty('graphMax')) {
+        this.options.yAxis.max = jsonData.setup.graphMax
+      }
 
-        if (jsonData.hasOwnProperty('subTitle')) {
-          self.options.subtitle = { text: jsonData.subTitle }
-        }
+      var self = this
 
-        if (jsonData.hasOwnProperty('graphMax')) {
-          self.options.yAxis.max = jsonData.graphMax
-        }
+      jsonData.setup.chArray.forEach(function (entry) {
+        var td = entry.stats;
 
-        jsonData.chArray.forEach(function (entry) {
-          var td = entry.stats;
+        td.what = entry.name
+        self.tableData.push(td)
 
-          td.what = entry.name
-          self.tableData.push(td)
-
-          self.options.series.push({
-            'name': entry.name,
-            'data': entry.data
-          })
-
-          self.histogramOptions.series.push({
-            'name': entry.name,
-            'data': entry.histogram
-          })
+        self.options.series.push({
+          'name': entry.name,
+          'data': entry.data
         })
 
-        jsonData.chArray[0].data.forEach(function (element) {
-          self.options.xAxis.tickPositions.push(Math.log10(element[0]))
+        self.histogramOptions.series.push({
+          'name': entry.name,
+          'data': entry.histogram
         })
+      })
 
-        self.setState({ ok: 1 })
+      jsonData.setup.chArray[0].data.forEach(function (element) {
+        self.options.xAxis.tickPositions.push(Math.log10(element[0]))
       })
-      .catch((err) => {
-        self.setState({ ok: 2 })
-        self.msg = '<p>err</p>'
-      })
+    }
   }
 
   render() {
-    if (this.state.ok === 0) {
-      return null
-    }
-
-    if (this.state.ok === 2) {
-      return (
-        <div>Error</div>
-      )
-    }
-
     return (
       <div>
         <div>
@@ -234,13 +199,12 @@ class App extends React.Component {
             data={this.tableData}
           />
         </div>
-        <div className='top10m'>
+        {/* <div className='top10m'>
           <HighchartsReact
             highcharts={Highcharts}
             options={this.histogramOptions}
           />
-        </div>
-
+        </div> */}
       </div>
     );
   }

@@ -7,6 +7,7 @@ table {
   background-color: white;
   border-spacing: 0px;
   border-collapse: collapse;
+  font-size: small;
 }
 
 thead > tr > th {
