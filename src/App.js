@@ -151,6 +151,10 @@ class App extends React.Component {
     this.tableData = [];
 
     if (jsonData.hasOwnProperty('setup')) {
+      if (jsonData.setup.hasOwnProperty('title')) {
+        this.options.title = { text: jsonData.setup.title }
+      }
+      
       if (jsonData.setup.hasOwnProperty('subTitle')) {
         this.options.subtitle = { text: jsonData.setup.subTitle }
       }
@@ -199,12 +203,12 @@ class App extends React.Component {
             data={this.tableData}
           />
         </div>
-        {/* <div className='top10m'>
+        {<div className='top10m'>
           <HighchartsReact
             highcharts={Highcharts}
             options={this.histogramOptions}
           />
-        </div> */}
+        </div>}
       </div>
     );
   }
