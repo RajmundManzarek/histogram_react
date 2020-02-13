@@ -91,31 +91,6 @@ class App extends React.Component {
       },
       series: []
     }
-    this.histogramOptions = {
-      credits: {
-        enabled: false
-      },
-      chart: {
-        type: 'column',
-        height: 800,
-        width: 1800
-      },
-      title: {
-        text: 'Histogram'
-      },
-      legend: {
-        enabled: true,
-        align: 'left'
-      },
-      yAxis: {
-        tickInterval: 50,
-        minorTickInterval: 10,
-        title: {
-          text: 'Count'
-        }
-      },
-      series: []
-    }
 
     this.tColumns = [
       {
@@ -175,11 +150,6 @@ class App extends React.Component {
           'name': entry.name,
           'data': entry.data
         })
-
-        self.histogramOptions.series.push({
-          'name': entry.name,
-          'data': entry.histogram
-        })
       })
 
       jsonData.setup.chArray[0].data.forEach(function (element) {
@@ -203,12 +173,6 @@ class App extends React.Component {
             data={this.tableData}
           />
         </div>
-        {<div className='top10m'>
-          <HighchartsReact
-            highcharts={Highcharts}
-            options={this.histogramOptions}
-          />
-        </div>}
       </div>
     );
   }
